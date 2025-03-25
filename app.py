@@ -1,0 +1,249 @@
+import gradio as gr
+import os  # Import os for file operations
+import re
+# ... (your existing imports) ...
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+import time
+import pandas as pd
+import asyncio
+
+from google import genai
+prompt_prefix = """Extract the following comma separated product specifications from the text file :"""
+prompt_suffix = """ The product description should be minimum 100 words describing the details of this product(if a product description already provided dont include also the provided one because we will have yours and we dont want duplicates) .
+Give it to me organized in a tabular text structure not json etc in order to be able later to convert it in csv where collumn 1 will be the spec names and the second the values, where columns are separated by the pipe symbol ('|') and each row is separated by a newline character.
+Dont include in your responce anithing like here they are the results.
+I only need the content related to the responce in my request.The description also should be part of the table.I want averithing to be in greek exept things that if they will be translated in greek will not make sence like pixels, Lumens etc.Please do not miss anithing about the given spec keywords.SO I need any information that exist in the text file about the given keywords specs.Dont miss anithing.But i need only info about the given keywords,nothing else, so the spesifications in the table should be only the given keywords and nothing else.:\n\n{file_content}"""
+default_prompt = """Extract all product  specifications from this text file including product name, price, and every spec (dont miss any spec). Also generate a product description of at least 50 words for this product(if a product description already provided dont include also the provided one because we will have yours and we dont want duplicates) .Iclude all the relevant info plus if you find any specific desctiopions.
+Give it to me organized in a tabular text structure not json etc in order to be able later to convert it in csv where collumn 1 will be the spec names and the second the values, where columns are separated by the pipe symbol ('|') and each row is separated by a newline character.
+I only need the content related to the responce in my request.The description also should be part of the table with name .Anso if you find any specific desctiopions put them in the table as well with appropriate names.Please dont miss any information.I want averithing to be in greek exept things that if they will be translated in greek will not make sence like pixels, Lumens etc:\n\n{file_content}"""
+
+# Predefined password
+PASSWORD = "1234"  # Replace with your desired password
+
+# ✅ Async Function to Initialize Gemini Client
+async def init_genai_client(api_key):
+    return genai.Client(api_key=api_key)
+
+# ✅ Login Function
+def login(password, user_api_key):
+    if not user_api_key.strip():
+        return gr.update(visible=True), gr.update(visible=False), gr.update(visible=True, value="Please provide your Google Cloud API key. If you don't have one, create one [here](https://aistudio.google.com/u/1/apikey)."), user_api_key
+
+    if password == PASSWORD:
+        return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False, value=""), user_api_key
+    else:
+        return gr.update(visible=True), gr.update(visible=False), gr.update(visible=True, value="Wrong password. If you forgot the password please contact the administrator."), user_api_key
+
+# ✅ Async Content Generation
+async def generate_content_async(client, prompt):
+    response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+    return response
+# ✅ Scraping and Extraction Logic
+async def scrape_and_extract(url, keywords, api_key):
+    if not api_key:
+        return "API key is missing. Please log in again."
+
+    client = await init_genai_client(api_key)
+
+    # Selenium setup
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("user-agent=Mozilla/5.0")
+
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.get(url)
+
+    wait = WebDriverWait(driver, 10)
+    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+
+    # Handle Cookies
+    cookie_keywords = ["Allow all cookies", "Accept all", "Agree", "Accept"]
+    try:
+        for keyword in cookie_keywords:
+            try:
+                cookie_button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), '{keyword}')]")))
+                cookie_button.click()
+                break
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    # Dynamic Scroll
+    def dynamic_scroll():
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        while True:
+            driver.execute_script("window.scrollBy(0, document.body.scrollHeight / 2);")
+            time.sleep(1)
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                break
+            last_height = new_height
+
+    dynamic_scroll()
+    page_source = driver.page_source
+    driver.quit()
+
+    # Save to file
+    with open("page_content.txt", "w", encoding="utf-8") as file:
+        file.write(page_source)
+
+    # Read file content
+    with open("page_content.txt", "r", encoding="utf-8") as file:
+        file_content = file.read()
+
+    # Choose the correct prompt
+    if not keywords.strip():
+        prompt = default_prompt.format(file_content=file_content)
+    else:
+        prompt = f"{prompt_prefix}{keywords}{prompt_suffix}"
+        prompt = prompt.format(file_content=file_content)
+
+    # Call Gemini AI
+    response = await generate_content_async(client, prompt)
+
+    # Save response
+    with open("output.txt", "w", encoding="utf-8") as file:
+        file.write(response.text)
+
+    # Convert to CSV
+    with open("output.txt", "r", encoding="utf-8") as file:
+        specs_text = file.read()
+    specs_text = re.sub(r"\|\-+\|\-+\|", "", specs_text)
+    lines = [line.strip("|").strip() for line in specs_text.split("\n") if "|" in line]
+    
+    specs_list = []
+    for line in lines:
+        parts = line.split("|")
+        key, value = (parts[0].strip(), parts[1].strip()) if len(parts) == 2 else (parts[0].strip(), "")
+        specs_list.append([key, value])
+
+    df = pd.DataFrame(specs_list, columns=["Specification", "Value"])
+    df.to_csv("extracted_specs.csv", index=False)
+
+    return "extracted_specs.csv"
+
+# 🎨 Gradio UI
+# 🎨 Custom Footer
+footer_html = """
+<footer id="my-custom-footer" style="text-align: center; padding: 10px; background-color: #f8f9fa; color: #6c757d; font-size: 14px;">
+  <p>&copy; 2025. All rights reserved.</p>
+  <p>
+    <a href="#" style="color: #6c757d; text-decoration: none;">Privacy Policy</a> |
+    <a href="#" style="color: #6c757d; text-decoration: none;">Terms of Service</a>
+  </p>
+</footer>
+"""
+
+# Gradio interface
+with gr.Blocks(css="""
+/* Ensure all Gradio buttons are styled */
+button[data-testid="button"], button {
+    background-color: orange !important;
+    color: black !important;
+    border: none !important;
+    font-weight: bold !important;
+    padding: 10px 15px !important;
+    border-radius: 5px !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+}
+
+/* Hover & Active states */
+button[data-testid="button"]:hover, button:hover {
+    background-color: darkorange !important;
+}
+button[data-testid="button"]:active, button:active {
+    background-color: orangered !important;
+}
+    #error_message {  /* Style for the error message */
+        color: red;
+        font-weight: bold;
+    }
+    #error_message a { /* Style for the link in the error message */
+        color: red;
+        text-decoration: underline;
+    }
+    .gradio-container .flag-container,
+    .gradio-container .share-button,
+    .gradio-container .duplicate-button,
+    .gradio-container .footer,
+    .gradio-container .space {
+        display: none !important;
+    }
+     footer { /* Added this style for the footer */
+        display: none !important;}
+     .wrap-hide-default-loading-icon .lds-ring {
+        display: none !important;
+    }
+
+    .wrap-hide-default-loading-icon .lds-ring:after {
+        content: ' ';
+        display: block;
+        width: 64px;
+        height: 64px;
+        margin: 8px;
+        border-radius: 50%;
+        border: 6px solid #fff;
+        border-color: #007bff transparent #007bff transparent; /* Blue color */
+        animation: lds-ring 1.2s linear infinite;
+    }
+
+    @keyframes lds-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    #my-custom-footer{ /*Added this style for custom footer*/
+        display:block !important;
+    }
+""",
+      elem_classes="wrap-hide-default-loading-icon",
+    title="Universal Eshop Ethical Web Scraper",
+    theme="default"
+) as demo:
+
+    with gr.Row():
+        with gr.Column() as login_page:
+            gr.Markdown("# 🔎 Ethical Web Scraper")
+            password_input = gr.Textbox(type="password", placeholder="Enter password", label="🔐 Password")
+            api_key_input = gr.Textbox(type="password", placeholder="Enter API Key", label="🔑 API Key")
+            login_button = gr.Button("Login")
+            error_message = gr.Markdown("", elem_id="error_message", visible=False)
+            api_key_state = gr.State("")  # Stores API Key
+
+        with gr.Column(visible=False) as main_page:
+            gr.Markdown("# 🌍 Ethical Web Scraper")
+            gr.Markdown("Enter a URL to scrape product data and download the extracted specifications as a CSV file.")
+            url_input = gr.Textbox(lines=1, placeholder="Enter URL", label="🔗 URL")
+            keywords_input = gr.Textbox(lines=1, placeholder="Enter keywords", label="🔎 Keywords")
+            submit_button = gr.Button("Submit")
+            output_file = gr.File(label="📂 Download Extracted Specs (CSV)")
+
+    # Login Button Action
+    login_button.click(fn=login, 
+                       inputs=[password_input, api_key_input], 
+                       outputs=[login_page, main_page, error_message, api_key_state])
+
+    # Scraping Button Action
+    submit_button.click(scrape_and_extract, 
+                        inputs=[url_input, keywords_input, api_key_state], 
+                        outputs=output_file)
+
+    # Inject Custom Footer
+    gr.HTML(footer_html)
+
+demo.launch(share=False, server_name="0.0.0.0", server_port=7860, debug=True)
