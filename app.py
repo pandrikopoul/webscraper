@@ -218,7 +218,7 @@ button[data-testid="button"]:active, button:active {
 
     with gr.Row():
         with gr.Column() as login_page:
-            gr.Markdown("# 🔎 Ethical Web Scraper")
+            gr.Markdown("# 🌍 Universal Eshop Ethical Web Scraper")
             password_input = gr.Textbox(type="password", placeholder="Enter password", label="🔐 Password")
             api_key_input = gr.Textbox(type="password", placeholder="Enter API Key", label="🔑 API Key")
             login_button = gr.Button("Login")
@@ -226,7 +226,7 @@ button[data-testid="button"]:active, button:active {
             api_key_state = gr.State("")  # Stores API Key
 
         with gr.Column(visible=False) as main_page:
-            gr.Markdown("# 🌍 Ethical Web Scraper")
+            gr.Markdown("# 🌍 Universal Eshop Ethical Web Scraper")
             gr.Markdown("Enter a URL to scrape product data and download the extracted specifications as a CSV file.")
             url_input = gr.Textbox(lines=1, placeholder="Enter URL", label="🔗 URL")
             keywords_input = gr.Textbox(lines=1, placeholder="Enter keywords", label="🔎 Keywords")
