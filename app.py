@@ -12,7 +12,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pandas as pd
 import asyncio
-
+#test
 from google import genai
 prompt_prefix = """Extract the following comma separated product specifications from the text file :"""
 prompt_suffix = """ The product description should be minimum 100 words describing the details of this product(if a product description already provided dont include also the provided one because we will have yours and we dont want duplicates) .
