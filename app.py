@@ -24,7 +24,7 @@ Give it to me organized in a tabular text structure not json etc in order to be 
 I only need the content related to the responce in my request.The description also should be part of the table with name .Anso if you find any specific desctiopions put them in the table as well with appropriate names.Please dont miss any information.I want averithing to be in greek exept things that if they will be translated in greek will not make sence like pixels, Lumens etc:\n\n{file_content}"""
 
 # Predefined password
-PASSWORD = "1234"  # Replace with your desired password
+PASSWORD = os.getenv("SECRET_KEY")  # Replace with your desired password
 
 # ✅ Async Function to Initialize Gemini Client
 async def init_genai_client(api_key):
