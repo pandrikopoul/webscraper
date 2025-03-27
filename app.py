@@ -119,6 +119,29 @@ async def save_csv(df):
     unique_filename = f"filtered_specs_{uuid.uuid4().hex}.csv"
     await asyncio.to_thread(df.to_csv, unique_filename, index=False)
     return unique_filename  # ✅ Correct return value
+def display_data_for_inspection(extracted_data):
+    df = pd.DataFrame(extracted_data, columns=["Specification", "Value"])
+    return gr.DataFrame(df, interactive=True)
+
+# Modify the scrape_and_extract function to return extracted data
+
+# Function to filter selected rows and create CSV
+
+
+# Function to display data and allow row selection
+def display_and_select_rows(df):
+    # Create a list of checkboxes corresponding to each row
+    checkboxes = [gr.Checkbox(label=str(i), value=True) for i in range(len(df))]
+
+    # Return the dataframe and checkboxes
+    return df, checkboxes
+
+def create_csv_from_selected_rows(df):
+    # No need to worry about selected_rows or dropping rows
+    # Just save the current DataFrame to a CSV file
+    filtered_csv_path = "filtered_specs.csv"
+    df.to_csv(filtered_csv_path, index=False)
+    return filtered_csv_path
 
 
 from gradio.themes.base import Base
@@ -201,8 +224,8 @@ with gr.Blocks(css="""
             gr.Markdown("# 🌍 Universal Eshop Ethical Web Scraper")
             password_input = gr.Textbox(type="password", placeholder="Enter password", label="🔐 Password")
             api_key_input = gr.Textbox(type="password", placeholder="Enter API Key", label="🔑 API Key")
-            login_button = gr.Button("Login", variant="primary")
-            error_message = gr.Markdown("", visible=False)
+            login_button = gr.Button("Login",variant="primary")
+            error_message = gr.Markdown("", elem_id="error_message", visible=False)
             api_key_state = gr.State("")  # Stores API Key
 
         with gr.Column(visible=False) as main_page:
@@ -210,33 +233,38 @@ with gr.Blocks(css="""
             gr.Markdown("Enter a URL to scrape product data and download the extracted specifications as a CSV file.")
             url_input = gr.Textbox(lines=1, placeholder="Enter URL", label="🔗 URL")
             keywords_input = gr.Textbox(lines=1, placeholder="Enter keywords", label="🔎 Keywords")
-            submit_button = gr.Button("Submit", variant="primary")
-            extracted_data = gr.DataFrame(visible=False, label="📝 Extracted Data (Editable)")
-            download_button = gr.Button("Download CSV", visible=False,variant="primary")
-            output_file = gr.File(label="📂 Download Extracted Specs (CSV)")
+            submit_button = gr.Button("Submit",variant="primary")
+            # output_file = gr.File(label="📂 Download Extracted Specs (CSV)")
+
+            # New Button for Inspecting Data
+            inspect_button = gr.Button("Inspect Data",variant="primary")
+            data_table = gr.DataFrame(label="Extracted Data",visible=False)
+           # selected_rows_checkbox = gr.CheckboxGroup(choices=[], label="Select rows to exclude from CSV")
+
+            # Button to create and download CSV from selected rows
+            download_button = gr.Button("Download Filtered CSV",variant="primary")
+            filtered_output_file = gr.File(label="📂 Download Filtered CSV")
 
     # Login Button Action
-    login_button.click(login, 
-                       inputs=[password_input, api_key_input], 
-                       outputs=[login_page, main_page, error_message, api_key_state])
+    login_button.click(fn=login,
+                       inputs=[password_input, api_key_input],
+                       outputs=[login_page, main_page, error_message,api_key_state])
 
-    # Scraping Button Action (Returns DataFrame)
-    submit_button.click(scrape_and_extract, 
-                    inputs=[url_input, keywords_input, api_key_state], 
-                    outputs=[extracted_data]
-    ).then(
-        lambda: (gr.update(visible=True), gr.update(visible=True)),  
-        outputs=[extracted_data, download_button]
-    )
+    # Scraping Button Action
+    submit_button.click(scrape_and_extract,
+                        inputs=[url_input, keywords_input,api_key_state],
+                        outputs=data_table)
 
-    # Allow Users to Modify Data Before Downloading
-    download_button.click(save_csv, 
-                      inputs=[extracted_data], 
-                      outputs=[output_file]
-    ).then(
-        lambda: gr.update(visible=True),
-        outputs=[output_file]
-    )
+    # Inspect Data Button Action
+    # Inspect Data Button Action
+    inspect_button.click(fn=lambda: gr.update(visible=True),  # Show the data table
+                         inputs=[],
+                         outputs=[data_table])
+
+    # Download Filtered CSV Button Action
+    download_button.click(fn=create_csv_from_selected_rows,
+                          inputs=[data_table],
+                          outputs=filtered_output_file)
 
     # Inject Custom Footer
     gr.HTML(footer_html)
