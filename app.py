@@ -127,24 +127,7 @@ footer_html = """
 # Gradio interface
 with gr.Blocks(css="""
 /* Ensure all Gradio buttons are styled */
-button[data-testid="button"], button {
-    background-color: orange !important;
-    color: black !important;
-    border: none !important;
-    font-weight: bold !important;
-    padding: 10px 15px !important;
-    border-radius: 5px !important;
-    font-size: 16px !important;
-    cursor: pointer !important;
-}
 
-/* Hover & Active states */
-button[data-testid="button"]:hover, button:hover {
-    background-color: darkorange !important;
-}
-button[data-testid="button"]:active, button:active {
-    background-color: orangered !important;
-}
     #error_message {  /* Style for the error message */
         color: red;
         font-weight: bold;
