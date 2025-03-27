@@ -42,96 +42,74 @@ def login(password, user_api_key):
 
 # ✅ Async Content Generation
 async def generate_content_async(client, prompt):
-    response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
-    return response
-# ✅ Scraping and Extraction Logic
+    response = await asyncio.to_thread(client.models.generate_content, model="gemini-2.0-flash", contents=prompt)
+    return response.text
+
 async def scrape_and_extract(url, keywords, api_key):
     if not api_key:
         return "API key is missing. Please log in again."
-
+    
     client = await init_genai_client(api_key)
-
-    # Selenium setup
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("user-agent=Mozilla/5.0")
-
+    
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     driver.get(url)
-
+    
     wait = WebDriverWait(driver, 10)
-    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-
-    # Handle Cookies
+    await asyncio.to_thread(wait.until, EC.presence_of_element_located((By.TAG_NAME, "body")))
+    
     cookie_keywords = ["Allow all cookies", "Accept all", "Agree", "Accept"]
-    try:
-        for keyword in cookie_keywords:
-            try:
-                cookie_button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), '{keyword}')]")))
-                cookie_button.click()
-                break
-            except Exception:
-                continue
-    except Exception:
-        pass
-
-    # Dynamic Scroll
-    def dynamic_scroll():
-        last_height = driver.execute_script("return document.body.scrollHeight")
-        while True:
-            driver.execute_script("window.scrollBy(0, document.body.scrollHeight / 2);")
-            time.sleep(1)
-            new_height = driver.execute_script("return document.body.scrollHeight")
-            if new_height == last_height:
-                break
-            last_height = new_height
-
-    dynamic_scroll()
+    for keyword in cookie_keywords:
+        try:
+            button = await asyncio.to_thread(wait.until, EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), '{keyword}')]")))
+            await asyncio.to_thread(button.click)
+            break
+        except:
+            continue
+    
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    while True:
+        driver.execute_script("window.scrollBy(0, document.body.scrollHeight / 2);")
+        await asyncio.sleep(1)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
+    
     page_source = driver.page_source
     driver.quit()
-
-    # Save to file
-    with open("page_content.txt", "w", encoding="utf-8") as file:
-        file.write(page_source)
-
-    # Read file content
-    with open("page_content.txt", "r", encoding="utf-8") as file:
-        file_content = file.read()
-
-    # Choose the correct prompt
-    if not keywords.strip():
-        prompt = default_prompt.format(file_content=file_content)
-    else:
-        prompt = f"{prompt_prefix}{keywords}{prompt_suffix}"
-        prompt = prompt.format(file_content=file_content)
-
-    # Call Gemini AI
-    response = await generate_content_async(client, prompt)
-
-    # Save response
-    with open("output.txt", "w", encoding="utf-8") as file:
-        file.write(response.text)
-
-    # Convert to CSV
-    with open("output.txt", "r", encoding="utf-8") as file:
-        specs_text = file.read()
+    
+    file_path = "page_content.txt"
+    async with aiofiles.open(file_path, "w", encoding="utf-8") as file:
+        await file.write(page_source)
+    
+    async with aiofiles.open(file_path, "r", encoding="utf-8") as file:
+        file_content = await file.read()
+    
+    prompt = default_prompt.format(file_content=file_content) if not keywords.strip() else f"{prompt_prefix}{keywords}{prompt_suffix}".format(file_content=file_content)
+    response_text = await generate_content_async(client, prompt)
+    
+    output_path = "output.txt"
+    async with aiofiles.open(output_path, "w", encoding="utf-8") as file:
+        await file.write(response_text)
+    
+    async with aiofiles.open(output_path, "r", encoding="utf-8") as file:
+        specs_text = await file.read()
+    
     specs_text = re.sub(r"\|\-+\|\-+\|", "", specs_text)
     lines = [line.strip("|").strip() for line in specs_text.split("\n") if "|" in line]
-    
-    specs_list = []
-    for line in lines:
-        parts = line.split("|")
-        key, value = (parts[0].strip(), parts[1].strip()) if len(parts) == 2 else (parts[0].strip(), "")
-        specs_list.append([key, value])
-
+    specs_list = [[parts[0].strip(), parts[1].strip()] if len(parts) == 2 else [parts[0].strip(), ""] for line in lines for parts in [line.split("|")]]
     df = pd.DataFrame(specs_list, columns=["Specification", "Value"])
-    df.to_csv("extracted_specs.csv", index=False)
-
-    return "extracted_specs.csv"
+    csv_path = "extracted_specs.csv"
+    df.to_csv(csv_path, index=False)
+    
+    return csv_path
 
 # 🎨 Gradio UI
 # 🎨 Custom Footer
