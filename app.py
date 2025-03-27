@@ -174,10 +174,10 @@ with gr.Blocks(css="""
     }
 """,
     title="Universal Eshop Ethical Web Scraper",
-    theme = gr.themes.Default(primary_hue="blue").set(
-    button_primary_background_fill="*primary_200",
-    button_primary_background_fill_hover="*primary_300",
-)
+#     theme = gr.themes.Default(primary_hue="blue").set(
+#     button_primary_background_fill="*primary_200",
+#     button_primary_background_fill_hover="*primary_300",
+# )
 ) as demo:
 
     with gr.Row():
