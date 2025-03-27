@@ -172,7 +172,7 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
         customized_csv_path = f"customized_specs_{uuid.uuid4()}.csv"
         df_cleaned.to_csv(customized_csv_path, index=False)
         
-        return customized_csv_path, df_cleaned  # Return the path for downloading and updated dataframe
+        return customized_csv_path  # Return the path for downloading and updated dataframe
 
 
     submit_button.click(scrape_and_extract, 
