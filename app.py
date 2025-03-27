@@ -16,6 +16,7 @@ import asyncio
 #test
 from google import genai
 import aiofiles
+import numpy as np
 prompt_prefix = """Extract the following comma separated product specifications from the text file :"""
 prompt_suffix = """ The product description should be minimum 100 words describing the details of this product(if a product description already provided dont include also the provided one because we will have yours and we dont want duplicates) .
 Give it to me organized in a tabular text structure not json etc in order to be able later to convert it in csv where collumn 1 will be the spec names and the second the values, where columns are separated by the pipe symbol ('|') and each row is separated by a newline character.
