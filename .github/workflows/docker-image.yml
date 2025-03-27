@@ -31,6 +31,19 @@ jobs:
             az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --image "ethical-web-scraper:$TAG" --yes
           done
 
+      - name: Delete Untagged Images (Manifests)
+        run: |
+          # Delete untagged images (manifests)
+          echo "Deleting untagged images (manifests)..."
+          # List all image manifests (including untagged ones)
+          IMAGES=$(az acr repository show-manifests --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --output tsv)
+          
+          # Loop through and delete untagged images (manifests)
+          for IMAGE in $IMAGES; do
+            echo "Deleting untagged image: $IMAGE"
+            az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --image "ethical-web-scraper@$IMAGE" --yes
+          done
+
       - name: Build Docker Image
         run: docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper:latest .
 
