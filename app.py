@@ -162,6 +162,8 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
 
     # Scraping Button Action
     def process_scraped_data(df):
+        # Replace empty strings or whitespace with NaN
+        df.replace(r'^\s*$', np.nan, regex=True, inplace=True)
         # Drop empty columns (those with all NaN or empty values)
         df_cleaned = df.dropna(axis=1, how='all')
         
