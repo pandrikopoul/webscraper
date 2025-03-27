@@ -13,24 +13,27 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Log in to Azure Container Registry
-        run: echo "${{ secrets.ACR_PASSWORD }}" | docker login ethicalwebscraperregistry.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
+      - name: Set up Azure CLI
+        uses: azure/setup-azurecli@v1
+
+      - name: Log in to Azure using Service Principal
+        run: |
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
 
       - name: List existing tags in ACR
         run: |
-          az acr repository show-tags --name ethicalwebscraperregistry --repository ethical-web-scraper --output table
+          az acr repository show-tags --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --output table
 
-      - name: Delete old images from ACR
+      - name: Delete all images from ACR
         run: |
-          # Optionally list tags and delete specific ones (e.g., delete the oldest or unused tags)
-          OLD_TAGS=$(az acr repository show-tags --name ethicalwebscraperregistry --repository ethical-web-scraper --output tsv --query '[].tag' | grep -v "latest" | head -n 5)  # Adjust as needed to delete older images
-          for TAG in $OLD_TAGS; do
-            echo "Deleting old tag: $TAG"
-            az acr repository delete --name ethicalwebscraperregistry --repository ethical-web-scraper --tag $TAG --yes
+          TAGS=$(az acr repository show-tags --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --output tsv --query '[].tag')
+          for TAG in $TAGS; do
+            echo "Deleting tag: $TAG"
+            az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --tag $TAG --yes
           done
 
       - name: Build Docker Image
-        run: docker build -t ethicalwebscraperregistry.azurecr.io/ethical-web-scraper:latest .
+        run: docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper:latest .
 
       - name: Push Docker Image to ACR
-        run: docker push ethicalwebscraperregistry.azurecr.io/ethical-web-scraper:latest
+        run: docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper:latest
