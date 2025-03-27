@@ -112,6 +112,13 @@ async def scrape_and_extract(url, keywords, api_key):
     
     return csv_path
 
+from gradio.themes.base import Base
+import time
+
+class Seafoam(Base):
+    pass
+
+seafoam = Seafoam()
 # 🎨 Gradio UI
 # 🎨 Custom Footer
 footer_html = """
@@ -192,7 +199,7 @@ button[data-testid="button"]:active, button:active {
 """,
       elem_classes="wrap-hide-default-loading-icon",
     title="Universal Eshop Ethical Web Scraper",
-    theme="default"
+    theme=seafoam
 ) as demo:
 
     with gr.Row():
@@ -200,7 +207,7 @@ button[data-testid="button"]:active, button:active {
             gr.Markdown("# 🌍 Universal Eshop Ethical Web Scraper")
             password_input = gr.Textbox(type="password", placeholder="Enter password", label="🔐 Password")
             api_key_input = gr.Textbox(type="password", placeholder="Enter API Key", label="🔑 API Key")
-            login_button = gr.Button("Login")
+            login_button = gr.Button("Login", variant="primary")
             error_message = gr.Markdown("", elem_id="error_message", visible=False)
             api_key_state = gr.State("")  # Stores API Key
 
