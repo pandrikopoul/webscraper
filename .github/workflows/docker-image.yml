@@ -24,17 +24,22 @@ jobs:
 
       - name: Delete Untagged Images (Manifests)
         run: |
-          # Delete untagged images (manifests)
           echo "Deleting untagged images (manifests)..."
+          
           # List all image manifests (including untagged ones)
           IMAGES=$(az acr repository show-manifests --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --output tsv)
-          
+
           # Loop through and delete untagged images (manifests)
           for IMAGE in $IMAGES; do
-            # Skip images that are tagged 'latest'
-            if [[ "$IMAGE" != *"latest"* ]]; then
-              echo "Deleting untagged image: $IMAGE"
-              az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --image "ethical-web-scraper@$IMAGE" --yes
+            # Check if the image is a valid manifest digest (must match a sha256 pattern)
+            if [[ "$IMAGE" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+              # Skip images that are tagged 'latest'
+              if [[ "$IMAGE" != *"latest"* ]]; then
+                echo "Deleting untagged image: $IMAGE"
+                az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --image "ethical-web-scraper@$IMAGE" --yes
+              fi
+            else
+              echo "Skipping invalid manifest: $IMAGE"
             fi
           done
 
