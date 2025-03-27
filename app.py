@@ -216,7 +216,7 @@ with gr.Blocks(css="""
 """,
       elem_classes="wrap-hide-default-loading-icon",
     title="Universal Eshop Ethical Web Scraper",
-    theme=seafoam
+    theme="default"
 ) as demo:
 
     with gr.Row():
