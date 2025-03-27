@@ -114,21 +114,21 @@ async def scrape_and_extract(url, keywords, api_key):
 
 # 🎨 Gradio UI
 # 🎨 Custom Footer
-footer_html = """
-<footer id="my-custom-footer" style="text-align: center; padding: 10px; background-color: #f8f9fa; color: #6c757d; font-size: 14px;">
-  <p>&copy; 2025. All rights reserved.</p>
-  <p>
-    <a href="#" style="color: #6c757d; text-decoration: none;">Privacy Policy</a> |
-    <a href="#" style="color: #6c757d; text-decoration: none;">Terms of Service</a>
-  </p>
-</footer>
-"""
+# footer_html = """
+# <footer id="my-custom-footer" style="text-align: center; padding: 10px; background-color: #f8f9fa; color: #6c757d; font-size: 14px;">
+#   <p>&copy; 2025. All rights reserved.</p>
+#   <p>
+#     <a href="#" style="color: #6c757d; text-decoration: none;">Privacy Policy</a> |
+#     <a href="#" style="color: #6c757d; text-decoration: none;">Terms of Service</a>
+#   </p>
+# </footer>
+# """
 
 # Gradio interface
 with gr.Blocks(
      
-    title="Universal Eshop Ethical Web Scraper",
-    theme=gr.themes.Default(primary_hue=gr.themes.colors.red, secondary_hue=gr.themes.colors.pink)
+    # title="Universal Eshop Ethical Web Scraper",
+    theme=gr.themes.Soft()
 ) as demo:
 
     with gr.Row():
@@ -159,6 +159,6 @@ with gr.Blocks(
                         outputs=output_file)
 
     # Inject Custom Footer
-    gr.HTML(footer_html)
+    # gr.HTML(footer_html)
 
 demo.launch(share=False, server_name="0.0.0.0", server_port=7860, debug=True)
