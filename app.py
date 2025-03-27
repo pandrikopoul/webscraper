@@ -47,6 +47,7 @@ async def generate_content_async(client, prompt):
     response = await asyncio.to_thread(client.models.generate_content, model="gemini-2.0-flash", contents=prompt)
     return response.text
 
+
 async def scrape_and_extract(url, keywords, api_key):
     if not api_key:
         return "API key is missing. Please log in again."
@@ -65,7 +66,7 @@ async def scrape_and_extract(url, keywords, api_key):
     
     wait = WebDriverWait(driver, 10)
     await asyncio.to_thread(wait.until, EC.presence_of_element_located((By.TAG_NAME, "body")))
-    
+
     cookie_keywords = ["Allow all cookies", "Accept all", "Agree", "Accept"]
     for keyword in cookie_keywords:
         try:
@@ -111,20 +112,18 @@ async def scrape_and_extract(url, keywords, api_key):
     csv_path = "extracted_specs.csv"
     df.to_csv(csv_path, index=False)
     
-    return csv_path
+    return df  # Return the dataframe instead of the CSV file path
 
 from gradio.themes.base import Base
 from gradio.themes.utils import colors, fonts, sizes
 import time
 
-
 class Seafoam(Base):
     pass
 
-
 seafoam = Seafoam()
+
 # 🎨 Gradio UI
-# 🎨 Custom Footer
 footer_html = """
 <footer id="my-custom-footer" style="text-align: center; padding: 10px; background-color: #f8f9fa; color: #6c757d; font-size: 14px;">
   <p>&copy; 2025. All rights reserved.</p>
@@ -136,57 +135,7 @@ footer_html = """
 """
 
 # Gradio interface
-with gr.Blocks(css="""
-
-    #error_message {  /* Style for the error message */
-        color: red;
-        font-weight: bold;
-    }
-    #error_message a { /* Style for the link in the error message */
-        color: red;
-        text-decoration: underline;
-    }
-    .gradio-container .flag-container,
-    .gradio-container .share-button,
-    .gradio-container .duplicate-button,
-    .gradio-container .footer,
-    .gradio-container .space {
-        display: none !important;
-    }
-     footer { /* Added this style for the footer */
-        display: none !important;}
-     .wrap-hide-default-loading-icon .lds-ring {
-        display: none !important;
-    }
-
-    .wrap-hide-default-loading-icon .lds-ring:after {
-        content: ' ';
-        display: block;
-        width: 64px;
-        height: 64px;
-        margin: 8px;
-        border-radius: 50%;
-        border: 6px solid #fff;
-        border-color: #007bff transparent #007bff transparent; /* Blue color */
-        animation: lds-ring 1.2s linear infinite;
-    }
-
-    @keyframes lds-ring {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-    #my-custom-footer{ /*Added this style for custom footer*/
-        display:block !important;
-    }
-""",
-      elem_classes="wrap-hide-default-loading-icon",
-    title="Universal Eshop Ethical Web Scraper",
-    theme=seafoam
-) as demo:
+with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal Eshop Ethical Web Scraper", theme=seafoam) as demo:
 
     with gr.Row():
         with gr.Column() as login_page:
@@ -203,7 +152,8 @@ with gr.Blocks(css="""
             url_input = gr.Textbox(lines=1, placeholder="Enter URL", label="🔗 URL")
             keywords_input = gr.Textbox(lines=1, placeholder="Enter keywords", label="🔎 Keywords")
             submit_button = gr.Button("Submit", variant="primary")
-            output_file = gr.File(label="📂 Download Extracted Specs (CSV)")
+            output_file = gr.File(label="📂 Download Extracted Specs (CSV)", visible=False)
+            data_table = gr.DataFrame(label="Customizable Extracted Data", visible=False)  # Added the data table for editing
 
     # Login Button Action
     login_button.click(fn=login, 
@@ -211,9 +161,18 @@ with gr.Blocks(css="""
                        outputs=[login_page, main_page, error_message, api_key_state])
 
     # Scraping Button Action
+    def process_scraped_data(df):
+        # Save the customized table to CSV
+        customized_csv_path = f"customized_specs_{uuid.uuid4()}.csv"
+        df.to_csv(customized_csv_path, index=False)
+        return customized_csv_path
+
     submit_button.click(scrape_and_extract, 
                         inputs=[url_input, keywords_input, api_key_state], 
-                        outputs=output_file)
+                        outputs=[data_table])  # Display the dataframe after scraping
+
+    # After customizing the data, allow the user to download it
+    data_table.change(fn=process_scraped_data, inputs=[data_table], outputs=[output_file])
 
     # Inject Custom Footer
     gr.HTML(footer_html)
