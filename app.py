@@ -125,55 +125,8 @@ footer_html = """
 """
 
 # Gradio interface
-with gr.Blocks(css="""
-/* Ensure all Gradio buttons are styled */
-
-    #error_message {  /* Style for the error message */
-        color: red;
-        font-weight: bold;
-    }
-    #error_message a { /* Style for the link in the error message */
-        color: red;
-        text-decoration: underline;
-    }
-    .gradio-container .flag-container,
-    .gradio-container .share-button,
-    .gradio-container .duplicate-button,
-    .gradio-container .footer,
-    .gradio-container .space {
-        display: none !important;
-    }
-     footer { /* Added this style for the footer */
-        display: none !important;}
-     .wrap-hide-default-loading-icon .lds-ring {
-        display: none !important;
-    }
-
-    .wrap-hide-default-loading-icon .lds-ring:after {
-        content: ' ';
-        display: block;
-        width: 64px;
-        height: 64px;
-        margin: 8px;
-        border-radius: 50%;
-        border: 6px solid #fff;
-        border-color: #007bff transparent #007bff transparent; /* Blue color */
-        animation: lds-ring 1.2s linear infinite;
-    }
-
-    @keyframes lds-ring {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-    #my-custom-footer{ /*Added this style for custom footer*/
-        display:block !important;
-    }
-""",
-      elem_classes="wrap-hide-default-loading-icon",
+with gr.Blocks(
+     
     title="Universal Eshop Ethical Web Scraper",
     theme=gr.themes.Default(primary_hue=gr.themes.colors.red, secondary_hue=gr.themes.colors.pink)
 ) as demo:
