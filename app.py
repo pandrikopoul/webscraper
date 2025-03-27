@@ -161,7 +161,7 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
             submit_button = gr.Button("Submit", variant="primary")
             output_file = gr.File(label="📂 Download Extracted Specs (CSV)", visible=True)
             data_table = gr.DataFrame(label="Customizable Extracted Data", visible=True)  # Added the data table for editing
-            output_dataframe = gr.DataFrame(value=df, interactive=True)
+            #output_dataframe = gr.DataFrame(value=df, interactive=True)
 
     # Login Button Action
     login_button.click(fn=login, 
