@@ -192,7 +192,15 @@ with gr.Blocks(
 
             # New Button for Inspecting Data
             inspect_button = gr.Button("Inspect Data",variant="primary")
-            data_table = gr.DataFrame(label="Extracted Data",visible=False, interactive=True)
+            data_table = gr.DataFrame(
+                label="Extracted Data",
+                interactive=True,  # Ensure full editability
+                
+                row_count=(1, "dynamic"),  # Allow dynamic row addition
+                col_count=(1, "dynamic"),  # Allow dynamic column addition
+                datatype="str",  # Ensure text inputs work properly
+                visible=True  # Initially hidden until data is loaded
+            )
            # selected_rows_checkbox = gr.CheckboxGroup(choices=[], label="Select rows to exclude from CSV")
 
             # Button to create and download CSV from selected rows
