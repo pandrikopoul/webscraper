@@ -123,6 +123,12 @@ class Seafoam(Base):
     pass
 
 seafoam = Seafoam()
+data = {
+    "Column 1": [1, 2, 3, 4],
+    "Column 2": ["A", "B", "C", "D"],
+    "Column 3": [10.5, 20.5, 30.5, 40.5]
+}
+df = pd.DataFrame(data)
 
 # 🎨 Gradio UI
 footer_html = """
@@ -155,6 +161,7 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
             submit_button = gr.Button("Submit", variant="primary")
             output_file = gr.File(label="📂 Download Extracted Specs (CSV)", visible=True)
             data_table = gr.DataFrame(label="Customizable Extracted Data", visible=True)  # Added the data table for editing
+            output_dataframe = gr.DataFrame(value=df, interactive=True)
 
     # Login Button Action
     login_button.click(fn=login, 
