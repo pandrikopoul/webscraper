@@ -13,23 +13,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set up Azure CLI
-        uses: microsoft/setup-azurecli@v1  # Corrected action name
-
-      - name: Log in to Azure using Service Principal
-        run: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+      - name: Log in to Azure Container Registry
+        run: echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
       - name: List existing tags in ACR
         run: |
-          az acr repository show-tags --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --output table
+          # List the tags to check current images
+          docker pull ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper:latest
+          docker images
 
       - name: Delete all images from ACR
         run: |
-          TAGS=$(az acr repository show-tags --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --output tsv --query '[].tag')
+          # Get the tags from the ACR repository
+          TAGS=$(docker images ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper --format '{{.Tag}}')
           for TAG in $TAGS; do
             echo "Deleting tag: $TAG"
-            az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --tag $TAG --yes
+            docker rmi ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper:$TAG || true
           done
 
       - name: Build Docker Image
