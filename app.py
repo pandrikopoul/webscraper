@@ -192,7 +192,7 @@ button[data-testid="button"]:active, button:active {
 """,
       elem_classes="wrap-hide-default-loading-icon",
     title="Universal Eshop Ethical Web Scraper",
-    theme=gr.themes.Default(primary_hue=gr.themes.colors.red, secondary_hue=gr.themes.colors.pink
+    theme=gr.themes.Default(primary_hue=gr.themes.colors.red, secondary_hue=gr.themes.colors.pink)
 ) as demo:
 
     with gr.Row():
