@@ -117,11 +117,9 @@ async def scrape_and_extract(url, keywords, api_key):
 # ✅ Async Function to Save DataFrame as CSV
 async def save_csv(df):
     unique_filename = f"filtered_specs_{uuid.uuid4().hex}.csv"
-    
-    async with aiofiles.open(unique_filename, "w", encoding="utf-8") as file:
-        await asyncio.to_thread(df.to_csv, file, index=False)
+    await asyncio.to_thread(df.to_csv, unique_filename, index=False)
+    return unique_filename  # ✅ Correct return value
 
-    return unique_filename
 
 from gradio.themes.base import Base
 from gradio.themes.utils import colors, fonts, sizes
@@ -224,15 +222,22 @@ with gr.Blocks(css="""
 
     # Scraping Button Action (Returns DataFrame)
     submit_button.click(scrape_and_extract, 
-                        inputs=[url_input, keywords_input, api_key_state], 
-                        outputs=[extracted_data]).then(
-    lambda df: (gr.update(visible=True), gr.update(visible=True)) if not df.empty else (gr.update(visible=False), gr.update(visible=False)),
-    inputs=[extracted_data],
-    outputs=[extracted_data, download_button]
+                    inputs=[url_input, keywords_input, api_key_state], 
+                    outputs=[extracted_data]
+    ).then(
+        lambda: (gr.update(visible=True), gr.update(visible=True)),  
+        outputs=[extracted_data, download_button]
     )
 
     # Allow Users to Modify Data Before Downloading
-    download_button.click(save_csv, inputs=[extracted_data], outputs=[output_file])
+    download_button.click(save_csv, 
+                      inputs=[extracted_data], 
+                      outputs=[output_file]
+    ).then(
+        lambda: gr.update(visible=True),
+        outputs=[output_file]
+    )
+
     # Inject Custom Footer
     gr.HTML(footer_html)
 
