@@ -127,7 +127,24 @@ footer_html = """
 # Gradio interface
 with gr.Blocks(css="""
 /* Ensure all Gradio buttons are styled */
+button[data-testid="button"], button {
+    background-color: orange !important;
+    color: black !important;
+    border: none !important;
+    font-weight: bold !important;
+    padding: 10px 15px !important;
+    border-radius: 5px !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+}
 
+/* Hover & Active states */
+button[data-testid="button"]:hover, button:hover {
+    background-color: darkorange !important;
+}
+button[data-testid="button"]:active, button:active {
+    background-color: orangered !important;
+}
     #error_message {  /* Style for the error message */
         color: red;
         font-weight: bold;
@@ -172,7 +189,11 @@ with gr.Blocks(css="""
     #my-custom-footer{ /*Added this style for custom footer*/
         display:block !important;
     }
-""",title="Universal Eshop Ethical Web Scraper",theme = gr.themes.Default()) as demo:
+""",
+      elem_classes="wrap-hide-default-loading-icon",
+    title="Universal Eshop Ethical Web Scraper",
+    theme="default"
+) as demo:
 
     with gr.Row():
         with gr.Column() as login_page:
