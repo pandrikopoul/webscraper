@@ -125,55 +125,7 @@ async def scrape_and_extract(url, keywords, api_key):
 # """
 
 # Gradio interface
-with gr.Blocks(css="""
-/* Ensure all Gradio buttons are styled */
-
-    #error_message {  /* Style for the error message */
-        color: red;
-        font-weight: bold;
-    }
-    #error_message a { /* Style for the link in the error message */
-        color: red;
-        text-decoration: underline;
-    }
-    .gradio-container .flag-container,
-    .gradio-container .share-button,
-    .gradio-container .duplicate-button,
-    .gradio-container .footer,
-    .gradio-container .space {
-        display: none !important;
-    }
-     footer { /* Added this style for the footer */
-        display: none !important;}
-     .wrap-hide-default-loading-icon .lds-ring {
-        display: none !important;
-    }
-
-    .wrap-hide-default-loading-icon .lds-ring:after {
-        content: ' ';
-        display: block;
-        width: 64px;
-        height: 64px;
-        margin: 8px;
-        border-radius: 50%;
-        border: 6px solid #fff;
-        border-color: #007bff transparent #007bff transparent; /* Blue color */
-        animation: lds-ring 1.2s linear infinite;
-    }
-
-    @keyframes lds-ring {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-    #my-custom-footer{ /*Added this style for custom footer*/
-        display:block !important;
-    }
-""",
-     
+with gr.Blocks(
     # title="Universal Eshop Ethical Web Scraper",
     theme=gr.themes.Soft()
 ) as demo:
@@ -206,6 +158,6 @@ with gr.Blocks(css="""
                         outputs=output_file)
 
     # Inject Custom Footer
-    gr.HTML(footer_html)
+    # gr.HTML(footer_html)
 
 demo.launch(share=False, server_name="0.0.0.0", server_port=7860, debug=True)
