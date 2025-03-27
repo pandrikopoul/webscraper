@@ -21,6 +21,17 @@ jobs:
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
+      - name: Check if Repository Exists in ACR
+        run: |
+          # Check if the repository exists
+          REPO_EXISTS=$(az acr repository show --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --output tsv 2>/dev/null)
+
+          if [ -n "$REPO_EXISTS" ]; then
+            echo "Repository exists. Proceeding with tag listing and image deletion."
+          else
+            echo "Repository 'ethical-web-scraper' does not exist. Skipping tag deletion."
+          fi
+
       - name: List Existing Tags in ACR
         run: |
           # List all tags in the ACR repository
