@@ -172,20 +172,14 @@ with gr.Blocks(css="""
     #my-custom-footer{ /*Added this style for custom footer*/
         display:block !important;
     }
-""",
-    title="Universal Eshop Ethical Web Scraper",
-#     theme = gr.themes.Default(primary_hue="blue").set(
-#     button_primary_background_fill="*primary_200",
-#     button_primary_background_fill_hover="*primary_300",
-# )
-) as demo:
+""",title="Universal Eshop Ethical Web Scraper",theme = gr.themes.Default()) as demo:
 
     with gr.Row():
         with gr.Column() as login_page:
             gr.Markdown("# 🌍 Universal Eshop Ethical Web Scraper")
             password_input = gr.Textbox(type="password", placeholder="Enter password", label="🔐 Password")
             api_key_input = gr.Textbox(type="password", placeholder="Enter API Key", label="🔑 API Key")
-            login_button = gr.Button("Login",variant="primary")
+            login_button = gr.Button("Login")
             error_message = gr.Markdown("", elem_id="error_message", visible=False)
             api_key_state = gr.State("")  # Stores API Key
 
@@ -194,7 +188,7 @@ with gr.Blocks(css="""
             gr.Markdown("Enter a URL to scrape product data and download the extracted specifications as a CSV file.")
             url_input = gr.Textbox(lines=1, placeholder="Enter URL", label="🔗 URL")
             keywords_input = gr.Textbox(lines=1, placeholder="Enter keywords", label="🔎 Keywords")
-            submit_button = gr.Button("Submit",variant="primary")
+            submit_button = gr.Button("Submit")
             output_file = gr.File(label="📂 Download Extracted Specs (CSV)")
 
     # Login Button Action
