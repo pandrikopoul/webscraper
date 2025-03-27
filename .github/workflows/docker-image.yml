@@ -34,7 +34,7 @@ jobs:
             # Skip images that are tagged 'latest'
             if [[ "$IMAGE" != *"latest"* ]]; then
               echo "Deleting untagged image: $IMAGE"
-              az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --manifest "$IMAGE" --yes
+              az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --image "ethical-web-scraper@$IMAGE" --yes
             fi
           done
 
