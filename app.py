@@ -238,7 +238,7 @@ with gr.Blocks(css="""
 
             # New Button for Inspecting Data
             inspect_button = gr.Button("Inspect Data",variant="primary")
-            data_table = gr.DataFrame(label="Extracted Data",visible=False)
+            data_table = gr.DataFrame(label="Extracted Data",visible=False, interactive=True)
            # selected_rows_checkbox = gr.CheckboxGroup(choices=[], label="Select rows to exclude from CSV")
 
             # Button to create and download CSV from selected rows
