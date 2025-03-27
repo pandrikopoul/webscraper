@@ -27,14 +27,14 @@ jobs:
           # List all tags except 'latest' and delete them one by one
           TAGS=$(az acr repository show-tags --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --output tsv | grep -v "latest")
           
-          # If there are tags other than 'latest', delete them
-          if [ -n "$TAGS" ]; then
+          # Check if the TAGS variable is empty
+          if [[ -z "$TAGS" ]]; then
+            echo "No tags other than 'latest' found. Proceeding with untagged images."
+          else
             for TAG in $TAGS; do
               echo "Deleting tag: $TAG"
               az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --image "ethical-web-scraper:$TAG" --yes
             done
-          else
-            echo "No tags other than 'latest' found. Proceeding with untagged images."
           fi
 
       - name: Delete Untagged Images (Manifests)
