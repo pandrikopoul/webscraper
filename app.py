@@ -19,10 +19,10 @@ prompt_prefix = """Extract the following comma separated product specifications 
 prompt_suffix = """ The product description should be minimum 100 words describing the details of this product(if a product description already provided dont include also the provided one because we will have yours and we dont want duplicates) .
 Give it to me organized in a tabular text structure not json etc in order to be able later to convert it in csv where collumn 1 will be the spec names and the second the values, where columns are separated by the pipe symbol ('|') and each row is separated by a newline character.
 Dont include in your responce anithing like here they are the results.
-I only need the content related to the responce in my request.The description also should be part of the table.I want averithing to be in greek exept things that if they will be translated in greek will not make sence like pixels, Lumens etc.Please do not miss anithing about the given spec keywords.SO I need any information that exist in the text file about the given keywords specs.Dont miss anithing.But i need only info about the given keywords,nothing else, so the spesifications in the table should be only the given keywords and nothing else.:\n\n{file_content}"""
+I only need the content related to the responce in my request.The description also should be part of the table.I want everything to be translated in greek language exept things that if they will be translated in greek will not make sence like pixels, Lumens etc.Please do not miss anithing about the given spec keywords.SO I need any information that exist in the text file about the given keywords specs.Dont miss anithing.But i need only info about the given keywords,nothing else, so the spesifications in the table should be only the given keywords and nothing else.:\n\n{file_content}"""
 default_prompt = """Extract all product  specifications from this text file including product name, price, and every spec (dont miss any spec). Also generate a product description of at least 50 words for this product(if a product description already provided dont include also the provided one because we will have yours and we dont want duplicates) .Iclude all the relevant info plus if you find any specific desctiopions.
 Give it to me organized in a tabular text structure not json etc in order to be able later to convert it in csv where collumn 1 will be the spec names and the second the values, where columns are separated by the pipe symbol ('|') and each row is separated by a newline character.
-I only need the content related to the responce in my request.The description also should be part of the table with name .Anso if you find any specific desctiopions put them in the table as well with appropriate names.Please dont miss any information.I want averithing to be in greek exept things that if they will be translated in greek will not make sence like pixels, Lumens etc:\n\n{file_content}"""
+I only need the content related to the responce in my request.The description also should be part of the table with name .Anso if you find any specific descriptions put them in the table as well with appropriate names.Please dont miss any information.I want everything to be translated in greek language exept things that if they will be translated in greek will not make sence like pixels, Lumens etc:\n\n{file_content}"""
 
 # Predefined password
 PASSWORD = os.getenv("SECRET_KEY")  # Replace with your desired password
@@ -125,7 +125,18 @@ footer_html = """
 """
 
 # Gradio interface
-with gr.Blocks( css=""".gradio-container .flag-container,
+with gr.Blocks(css="""
+/* Ensure all Gradio buttons are styled */
+
+    #error_message {  /* Style for the error message */
+        color: red;
+        font-weight: bold;
+    }
+    #error_message a { /* Style for the link in the error message */
+        color: red;
+        text-decoration: underline;
+    }
+    .gradio-container .flag-container,
     .gradio-container .share-button,
     .gradio-container .duplicate-button,
     .gradio-container .footer,
@@ -136,8 +147,33 @@ with gr.Blocks( css=""".gradio-container .flag-container,
         display: none !important;}
      .wrap-hide-default-loading-icon .lds-ring {
         display: none !important;
-    }""",
-    # title="Universal Eshop Ethical Web Scraper",
+    }
+
+    .wrap-hide-default-loading-icon .lds-ring:after {
+        content: ' ';
+        display: block;
+        width: 64px;
+        height: 64px;
+        margin: 8px;
+        border-radius: 50%;
+        border: 6px solid #fff;
+        border-color: #007bff transparent #007bff transparent; /* Blue color */
+        animation: lds-ring 1.2s linear infinite;
+    }
+
+    @keyframes lds-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    #my-custom-footer{ /*Added this style for custom footer*/
+        display:block !important;
+    }
+""",
+    title="Universal Eshop Ethical Web Scraper",
     theme=gr.themes.Soft()
 ) as demo:
 
