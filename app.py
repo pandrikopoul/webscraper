@@ -209,7 +209,7 @@ button[data-testid="button"]:active, button:active {
             gr.Markdown("Enter a URL to scrape product data and download the extracted specifications as a CSV file.")
             url_input = gr.Textbox(lines=1, placeholder="Enter URL", label="🔗 URL")
             keywords_input = gr.Textbox(lines=1, placeholder="Enter keywords", label="🔎 Keywords")
-            submit_button = gr.Button("Submit")
+            submit_button = gr.Button("Submit", variant="primary")
             output_file = gr.File(label="📂 Download Extracted Specs (CSV)")
 
     # Login Button Action
