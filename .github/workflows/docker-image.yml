@@ -40,8 +40,10 @@ jobs:
           
           # Loop through and delete untagged images (manifests)
           for IMAGE in $IMAGES; do
-            echo "Deleting untagged image: $IMAGE"
-            az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --image "ethical-web-scraper@$IMAGE" --yes
+            if [[ "$IMAGE" != *"latest"* ]]; then  # Skip if it's tagged 'latest'
+              echo "Deleting untagged image: $IMAGE"
+              az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --image "ethical-web-scraper@$IMAGE" --yes
+            fi
           done
 
       - name: Build Docker Image
