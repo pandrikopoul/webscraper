@@ -162,10 +162,18 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
 
     # Scraping Button Action
     def process_scraped_data(df):
+        # Drop empty columns (those with all NaN or empty values)
+        df_cleaned = df.dropna(axis=1, how='all')
+        
+        # Drop empty rows (those with all NaN or empty values)
+        df_cleaned = df_cleaned.dropna(axis=0, how='all')
+        
         # Save the customized table to CSV
         customized_csv_path = f"customized_specs_{uuid.uuid4()}.csv"
-        df.to_csv(customized_csv_path, index=False)
-        return customized_csv_path
+        df_cleaned.to_csv(customized_csv_path, index=False)
+        
+        return customized_csv_path, df_cleaned  # Return the path for downloading and updated dataframe
+
 
     submit_button.click(scrape_and_extract, 
                         inputs=[url_input, keywords_input, api_key_state], 
