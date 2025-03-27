@@ -152,8 +152,8 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
             url_input = gr.Textbox(lines=1, placeholder="Enter URL", label="🔗 URL")
             keywords_input = gr.Textbox(lines=1, placeholder="Enter keywords", label="🔎 Keywords")
             submit_button = gr.Button("Submit", variant="primary")
-            output_file = gr.File(label="📂 Download Extracted Specs (CSV)", visible=False)
-            data_table = gr.DataFrame(label="Customizable Extracted Data", visible=False)  # Added the data table for editing
+            output_file = gr.File(label="📂 Download Extracted Specs (CSV)", visible=True)
+            data_table = gr.DataFrame(label="Customizable Extracted Data", visible=True)  # Added the data table for editing
 
     # Login Button Action
     login_button.click(fn=login, 
