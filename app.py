@@ -225,7 +225,11 @@ with gr.Blocks(css="""
     # Scraping Button Action (Returns DataFrame)
     submit_button.click(scrape_and_extract, 
                         inputs=[url_input, keywords_input, api_key_state], 
-                        outputs=[extracted_data])
+                        outputs=[extracted_data]).then(
+    lambda df: (gr.update(visible=True), gr.update(visible=True)) if not df.empty else (gr.update(visible=False), gr.update(visible=False)),
+    inputs=[extracted_data],
+    outputs=[extracted_data, download_button]
+    )
 
     # Allow Users to Modify Data Before Downloading
     download_button.click(save_csv, inputs=[extracted_data], outputs=[output_file])
