@@ -16,6 +16,19 @@ jobs:
       - name: Log in to Azure Container Registry
         run: echo "${{ secrets.ACR_PASSWORD }}" | docker login ethicalwebscraperregistry.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
+      - name: List existing tags in ACR
+        run: |
+          az acr repository show-tags --name ethicalwebscraperregistry --repository ethical-web-scraper --output table
+
+      - name: Delete old images from ACR
+        run: |
+          # Optionally list tags and delete specific ones (e.g., delete the oldest or unused tags)
+          OLD_TAGS=$(az acr repository show-tags --name ethicalwebscraperregistry --repository ethical-web-scraper --output tsv --query '[].tag' | grep -v "latest" | head -n 5)  # Adjust as needed to delete older images
+          for TAG in $OLD_TAGS; do
+            echo "Deleting old tag: $TAG"
+            az acr repository delete --name ethicalwebscraperregistry --repository ethical-web-scraper --tag $TAG --yes
+          done
+
       - name: Build Docker Image
         run: docker build -t ethicalwebscraperregistry.azurecr.io/ethical-web-scraper:latest .
 
