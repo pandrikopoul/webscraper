@@ -16,20 +16,17 @@ jobs:
       - name: Log in to Azure Container Registry
         run: echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      - name: List existing tags in ACR
+      - name: List Existing Images Locally
         run: |
-          # List the tags to check current images
-          docker pull ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper:latest
-          docker images
+          # List all tags locally for the ACR repository
+          docker images ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper
 
-      - name: Delete all images from ACR
+      - name: Delete Images from ACR Using Azure CLI
         run: |
-          # Get the tags from the ACR repository
-          TAGS=$(docker images ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper --format '{{.Tag}}')
-          for TAG in $TAGS; do
-            echo "Deleting tag: $TAG"
-            docker rmi ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper:$TAG || true
-          done
+          # Use Azure CLI to delete all images from the repository (except latest)
+          az acr repository delete --name ${{ secrets.AZURE_ACR_NAME }} --repository ethical-web-scraper --yes --keep-tag "latest"
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Build Docker Image
         run: docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/ethical-web-scraper:latest .
