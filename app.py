@@ -175,10 +175,8 @@ with gr.Blocks(css="""
 """,
     title="Universal Eshop Ethical Web Scraper",
     theme = gr.themes.Default(primary_hue="blue").set(
-    button_primary_background_fill="*primary_200",  # Default blue color for button
-    button_primary_background_fill_hover="*primary_300",  # Lighter blue for hover
-    button_primary_border="*primary_200",  # Border to match the button color
-    button_primary_border_hover="*primary_300"  # Border color for hover state
+    button_primary_background_fill="*primary_200",
+    button_primary_background_fill_hover="*primary_300",
 )
 ) as demo:
 
