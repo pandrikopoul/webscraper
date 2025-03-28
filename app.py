@@ -22,9 +22,9 @@ prompt_suffix = """ The product description should be minimum 100 words describi
 Give it to me organized in a tabular text structure not json etc in order to be able later to convert it in csv where collumn 1 will be the spec names and the second the values, where columns are separated by the pipe symbol ('|') and each row is separated by a newline character.
 Dont include in your responce anithing like here they are the results.
 I only need the content related to the responce in my request.The description also should be part of the table.I want everything to be translated in the greek language excepte things that if they are translated in Greek will not make sence like pixels, Lumens etc.Please do not miss anything about the given spec keywords.SO I need any information that exist in the text file about the given keywords specs.Don't miss anything.But I need only info about the given keywords, nothing else, so the specifications in the table should be only the given keywords and nothing else.:\n\n{file_content}"""
-default_prompt = """Extract all product specifications from this text file, including product name, price, and every available specification. Do not miss any details.  
+default_prompt = """Extract all product specifications from this text file, including product name, price, and every available specification. Do not miss any details.
 
-Additionally, generate a general product description of at least 50 words. If the file includes more specific descriptions of functionalities, include them with appropriate field names. Ensure all relevant information is captured.  
+Additionally, generate a general product description of at least 50 words. If the file includes more specific descriptions of functionalities, include them with appropriate field names. Ensure all relevant information is captured.
 
 Format the response as a tabular text structure (not JSON or any other format) so it can be easily converted to CSV.  
 - Column 1: Specification names  
@@ -34,9 +34,11 @@ Format the response as a tabular text structure (not JSON or any other format) s
 
 Only include relevant content in the table—no extra commentary. If a specification is missing, simply exclude it.  
 
-Ensure the response is professional and complete. All content should be **properly translated into Greek**, except for technical terms (e.g., pixels, lumens) that should remain in their original form. I need only the translated results without the original language results.  
+Ensure the response is professional and complete. All content should be **properly translated into {language}**, except for technical terms (e.g., pixels, lumens) that should remain in their original form. I need only the translated results without the original language results.  
 
 \n\n{file_content}"""
+# Define available languages
+languages = ["Greek", "English", "French", "Spanish", "German", "Italian", "Dutch"]
 # Predefined password
 PASSWORD = os.getenv("SECRET_KEY")  # Replace with your desired password
 
@@ -60,7 +62,7 @@ async def generate_content_async(client, prompt):
     return response.text
 
 
-async def scrape_and_extract(url, keywords, api_key):
+async def scrape_and_extract(url, keywords, api_key,language):
     if not api_key:
         return "API key is missing. Please log in again."
     
@@ -107,7 +109,7 @@ async def scrape_and_extract(url, keywords, api_key):
     async with aiofiles.open(file_path, "r", encoding="utf-8") as file:
         file_content = await file.read()
     
-    prompt = default_prompt.format(file_content=file_content) if not keywords.strip() else f"{prompt_prefix}{keywords}{prompt_suffix}".format(file_content=file_content)
+    prompt = default_prompt.format(file_content=file_content, language=language) if not keywords.strip() else f"{prompt_prefix}{keywords}{prompt_suffix}".format(file_content=file_content)
     response_text = await generate_content_async(client, prompt)
     
     output_path = "output.txt"
@@ -169,6 +171,8 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
             gr.Markdown("Enter a URL to scrape product data and download the extracted specifications as a CSV file.")
             url_input = gr.Textbox(lines=1, placeholder="Enter URL", label="🔗 URL")
             keywords_input = gr.Textbox(lines=1, placeholder="Enter keywords", label="🔎 Keywords")
+            # Add the dropdown in the UI
+            language_dropdown = gr.Dropdown(choices=languages, value="Greek", label="Select Output Language 🌍")
             submit_button = gr.Button("Submit", variant="primary")
             output_file = gr.File(label="📂 Download Extracted Specs (CSV)", visible=True)
             data_table = gr.DataFrame(label="Customizable Extracted Data", visible=True)  # Added the data table for editing
@@ -197,7 +201,7 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
 
 
     submit_button.click(scrape_and_extract, 
-                        inputs=[url_input, keywords_input, api_key_state], 
+                        inputs=[url_input, keywords_input, api_key_state,language_dropdown], 
                         outputs=[data_table])  # Display the dataframe after scraping
 
     # After customizing the data, allow the user to download it
