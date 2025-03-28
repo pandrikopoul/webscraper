@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y wget unzip \
 RUN pip install webdriver-manager
 
 # Expose port 7860
-EXPOSE 8181
+EXPOSE 7860
 
 # Run the app
 CMD ["python", "app.py"]
