@@ -26,5 +26,6 @@ RUN pip install webdriver-manager
 EXPOSE 7861
 
 # Set the command to run your Gradio app using Gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:7861", "app:demo"]
+# Run the app
+CMD ["python", "app.py"]
 
