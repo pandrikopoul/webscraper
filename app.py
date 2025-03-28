@@ -155,7 +155,7 @@ footer_html = """
 """
 
 # Gradio interface
-with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal Eshop Ethical Web Scraper", theme=seafoam) as demo:
+with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal Eshop Ethical Web Scraper", theme=gr.themes.Soft()) as demo:
 
     with gr.Row():
         with gr.Column() as login_page:
@@ -175,7 +175,7 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
             language_dropdown = gr.Dropdown(choices=languages, value="Greek", label="Select Output Language 🌍")
             submit_button = gr.Button("Submit", variant="primary")
             output_file = gr.File(label="📂 Download Extracted Specs (CSV)", visible=True)
-            data_table = gr.DataFrame(label="Customizable Extracted Data", visible=True)  # Added the data table for editing
+            data_table = gr.DataFrame(label="Customizable Extracted Data", visible=True,wrap=True,interactive=True)  # Added the data table for editing
             #output_dataframe = gr.DataFrame(value=df, interactive=True)
 
     # Login Button Action
