@@ -194,5 +194,5 @@ with gr.Blocks(css=""" /* CSS here for UI customization */ """, title="Universal
 
     # Inject Custom Footer
     gr.HTML(footer_html)
-
-demo.launch(share=False, server_name="0.0.0.0", server_port=7860, debug=False)
+# This is the Gradio app you want to serve with Gunicorn
+app = demo.launch(share=False, server_name="0.0.0.0", server_port=7860, debug=True)
