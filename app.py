@@ -22,10 +22,21 @@ prompt_suffix = """ The product description should be minimum 100 words describi
 Give it to me organized in a tabular text structure not json etc in order to be able later to convert it in csv where collumn 1 will be the spec names and the second the values, where columns are separated by the pipe symbol ('|') and each row is separated by a newline character.
 Dont include in your responce anithing like here they are the results.
 I only need the content related to the responce in my request.The description also should be part of the table.I want everything to be translated in the greek language excepte things that if they are translated in Greek will not make sence like pixels, Lumens etc.Please do not miss anything about the given spec keywords.SO I need any information that exist in the text file about the given keywords specs.Don't miss anything.But I need only info about the given keywords, nothing else, so the specifications in the table should be only the given keywords and nothing else.:\n\n{file_content}"""
-default_prompt = """Extract all product  specifications from this text file, including product name, price, and every spec (dont miss any spec). Also, generate a general product description of at least 50 words for this product, also include any other more spesific descriptions the file might have (if any) describing specific functionalities, and give them appropriate field names . Include all the relevant info.
-Give it to me organized in a tabular text structure not json etc in order to be able later to convert it in csv where collumn 1 will be the spec names and the second the values, where columns are separated by the pipe symbol ('|') and each row is separated by a newline character.
-I only need the content related to the responce in my request, meaning only the info in the the table you return , cause I have an eshop and i automatically will include your table response to my eshop, so i don't want to have things like "I didn't find info about this spec...", if you don't find info for a speck just don't include them to your responce.The general description also should be part of the table.Please dont miss any information, and be as professional as possible.Also I want everything to be translated properly in Greek language but in order to make sense, except things that, if they are translated in Greek, will not make sense like pixels, Lumens etc:\n\n{file_content}"""
+default_prompt = """Extract all product specifications from this text file, including product name, price, and every available specification. Do not miss any details.  
 
+Additionally, generate a general product description of at least 50 words. If the file includes more specific descriptions of functionalities, include them with appropriate field names. Ensure all relevant information is captured.  
+
+Format the response as a tabular text structure (not JSON or any other format) so it can be easily converted to CSV.  
+- Column 1: Specification names  
+- Column 2: Corresponding values  
+- Columns separated by: '|' (pipe symbol)  
+- Rows separated by: newline character ('\n')  
+
+Only include relevant content in the table—no extra commentary. If a specification is missing, simply exclude it.  
+
+Ensure the response is professional and complete. All content should be **properly translated into Greek**, except for technical terms (e.g., pixels, lumens) that should remain in their original form. I need only the translated results without the original language results.  
+
+\n\n{file_content}"""
 # Predefined password
 PASSWORD = os.getenv("SECRET_KEY")  # Replace with your desired password
 
