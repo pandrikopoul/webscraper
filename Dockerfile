@@ -21,9 +21,10 @@ RUN apt-get update && apt-get install -y wget unzip \
 # Install ChromeDriver using webdriver-manager
 RUN pip install webdriver-manager
 
-# Expose port 7860
-EXPOSE 7860
 
 # Run the app
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:7860", "app:app"]
+EXPOSE 7861
+
+# Set the command to run your Gradio app using Gunicorn
+CMD ["gunicorn", "-b", "0.0.0.0:7861", "your_gradio_app:demo"]
 
